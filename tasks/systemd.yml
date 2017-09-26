@@ -1,0 +1,16 @@
+- name: add the systemd nagios.service to /etc/systemd/system/nagios.service
+  copy:
+    src: files/nagios.service
+    dest: /etc/systemd/system/nagios.service
+    owner: root
+    group: root
+
+- name: add the systemd nagios.service
+  copy:
+    src: files/nagios.service
+    dest: /usr/lib/systemd/system/nagios.service
+    owner: root
+    group: root
+
+- name: reload systemd
+  shell: systemctl daemon-reload

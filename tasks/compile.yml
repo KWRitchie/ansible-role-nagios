@@ -1,0 +1,43 @@
+- name: unpack the nagios tarball
+  unarchive: 
+    src: files/nagios-4.1.1.tar.gz
+    dest: /usr/
+
+- name: unpack the nagios plugins
+  unarchive:
+    src: files/nagios-plugins-2.1.1.tar.gz
+    dest: /usr/
+
+- name: configure nagios
+  shell: "cd /usr/nagios-4.1.1/ && ./configure --with-command-group={{ nagios_group_sup }} --with-nagios-user={{ nagios_user }} creates=/usr/nagios-4.1.1/makefile"
+
+- name: make all
+  shell: cd /usr/nagios-4.1.1/ && make all creates=/usr/nagios-4.1.1/base/nagios
+
+- name: make install
+  shell: cd /usr/nagios-4.1.1/ && make install creates=/usr/local/nagios/bin/nagios
+
+- name: make install-config
+  shell: cd /usr/nagios-4.1.1/ && make install-config creates=/usr/local/nagios/etc/nagios.cfg
+
+- name: make install-commandmode
+  shell: cd /usr/nagios-4.1.1/ && make install-commandmode creates=/usr/local/nagios/var/rw
+
+- name: make install-devel
+  shell: cd /usr/nagios-4.1.1/ && make install-devel creates=/usr/local/nagios/include/nagios/nagios.h
+
+- name: make install-webconf
+  shell: cd /usr/nagios-4.1.1/ && make install-webconf creates=/etc/httpd/conf.d/nagios.conf
+
+- name: configure nagios-plugins
+  shell: "cd /usr/nagios-plugins-2.1.1/ && ./configure --with-nagios-user={{ nagios_user }} --with-nagios-group={{ nagios_group }} --with-openssl=/usr/bin/openssl creates=/usr/nagios-plugins-2.1.1/makefile"
+
+- name: make plugins
+  shell: cd /usr/nagios-plugins-2.1.1/ && make 
+
+- name: make install plugins
+  shell: cd /usr/nagios-plugins-2.1.1/ && make install 
+  notify: restart_httpd
+
+- name: ensure "{{ nagios_user }}" owns the nagios path
+  shell: "chown -R {{ nagios_user }}:{{ nagios_group }} /usr/nagios-4.1.1"

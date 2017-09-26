@@ -1,0 +1,99 @@
+---
+# tasks file for nagios-server
+- name: install required packages
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+  - httpd
+  - php
+  - php-cli
+  - gcc
+  - glibc
+  - glibc-common
+  - gd 
+  - gd-devel
+  - net-snmp
+  - openssl-devel
+  - wget
+  - unzip 
+  - tar
+  - firewalld
+
+- name: start firewalld
+  service:
+    name: firewalld
+    state: started
+    enabled: yes
+
+- name: has systemd already added the nagios.service?
+  stat:
+    path: /etc/systemd/system/nagios.service
+  ignore_errors: true
+  register: nagiossystemd
+
+- name: include systemd configuration on first run
+  include: tasks/systemd.yml
+  when: nagiossystemd.stat.isdir is not defined
+
+- name: open httpd service on firewall
+  firewalld:
+    service: http
+    permanent: true
+    immediate: true
+    state: enabled
+
+- name: create the nagios group -- "{{ nagios_group_sup }}"
+  group:
+    name: "{{ nagios_group_sup }}"
+    state: present
+
+- name: create the nagios user -- "{{ nagios_user }}"
+  user:
+    name: "{{ nagios_user }}"
+    shell: /bin/bash
+    groups: "{{ nagios_group }},{{ nagios_group_sup }}"
+
+- name: add the "{{ nagios_group_sup }}" to apache user
+  user:
+    name: apache
+    groups: "apache,{{ nagios_group_sup }}"
+
+- name: has nagios already been installed?
+  stat:
+    path: /usr/nagios-4.1.1
+  register: nagiosinstall
+  ignore_errors: true
+
+- name: include compile code for nagios/nagios-plugins
+  include: tasks/compile.yml
+  when: nagiosinstall.stat.isdir is not defined 
+
+- name: does the htpasswd.users file exist?
+  stat:
+    path: /usr/local/nagios/etc/htpasswd.users
+  register: htpasswdfile
+
+- name: create the "{{ nagios_adm }}" user in htpasswd.users
+  htpasswd: 
+    path: /usr/local/nagios/etc/htpasswd.users
+    name: "{{ nagios_adm }}"
+    password: "{{ nagios_adm_password }}"
+    owner: "{{ nagios_user }}"
+    group: "{{ nagios_group_sup }}"
+  when: htpasswdfile.stat.path is not defined
+
+- name: ensure proper ownership of nagios dirs
+  shell: "chown -R {{ nagios_user }}:{{ nagios_group_sup }} /usr/local/nagios
+
+- name: start httpd
+  service:
+    name: httpd
+    state: started
+    enabled: yes
+
+- name: start nagios
+  service:
+    name: nagios
+    state: started
+    enabled: yes
