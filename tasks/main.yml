@@ -84,7 +84,7 @@
   when: htpasswdfile.stat.path is not defined
 
 - name: ensure proper ownership of nagios dirs
-  shell: "chown -R {{ nagios_user }}:{{ nagios_group_sup }} /usr/local/nagios
+  shell: "chown -R {{ nagios_user }}:{{ nagios_group_sup }} /usr/local/nagios"
 
 - name: start httpd
   service:
