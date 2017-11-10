@@ -19,6 +19,7 @@
   - unzip 
   - tar
   - firewalld
+  - python-passlib
 
 - name: start firewalld
   service:
