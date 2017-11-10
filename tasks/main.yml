@@ -48,6 +48,11 @@
     name: "{{ nagios_group_sup }}"
     state: present
 
+- name: create the nagios group -- "{{ nagios_group }}"
+  group:
+    name: "{{ nagios_group }}"
+    state: present
+
 - name: create the nagios user -- "{{ nagios_user }}"
   user:
     name: "{{ nagios_user }}"
