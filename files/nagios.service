@@ -10,8 +10,8 @@ User=nagios
 Group=nagios
 PIDFile=/usr/local/nagios/var/nagios.lock
 # Verify Nagios config before start as upstream suggested
-ExecStartPre=/usr/local/bin/nagios -v /usr/local/etc/nagios.cfg
-ExecStart=/usr/local/bin/nagios -d /usr/local/etc/nagios.cfg
+ExecStartPre=/usr/local/nagios/bin/nagios -v /usr/local/nagios/etc/nagios.cfg
+ExecStart=/usr/local/nagios/bin/nagios -d /usr/local/nagios/etc/nagios.cfg
 ExecStopPost=/usr/bin/rm -f /var/spool/nagios/cmd/nagios.cmd
 ExecReload=/bin/kill -HUP $MAINPID
 ExecStopPost=/bin/rm -f /var/run/nagios/nagios.pid
